@@ -1,0 +1,10 @@
+name: Bug report
+description: Report a reproducible problem using synthetic inputs
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Version, platform, steps and expected result
+      description: Include synthetic inputs only. Remove all private data.
+    validations:
+      required: true

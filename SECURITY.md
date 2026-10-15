@@ -1,0 +1,7 @@
+# Security
+
+The tool has no discovery, scheduler, network or credential integration. No real backup is accessed without an explicit archive argument. Only selected archive/manifest files and generated disposable targets are touched. Never pass live backup directories, production destinations or sensitive files to issue reports. Failure after target creation retains the partial disposable directory for inspection; no cleanup deletes user data.
+
+ZIP stored/deflate only. No tar, 7z, RAR, encrypted archives, disk images, application-aware recovery, metadata/permissions restoration, or automatic backup discovery. Limits: 64 MiB compressed archive and total expanded bytes, 16 MiB per file, 2,000 entries, depth 16 and expansion ratio 100. All symlinks, junctions, reparse points and special members are rejected, including links within the target; this deliberately excludes some legitimate backups. This is a rehearsal, not a production recovery utility or proof that an application can open the restored data. Select a trusted local parent not writable by other accounts; this MVP does not defend against a hostile process running as the same user concurrently replacing directories or mutating files.
+
+Do not post private files or exploitable security details in a public issue. Use GitHub private vulnerability reporting when enabled; if unavailable, contact the maintainer through the organization profile before sharing details. Only this candidate line is currently under review; no supported public release exists yet.

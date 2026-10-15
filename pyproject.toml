@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=78", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "backup-restore-rehearsal"
+version = "0.1.0rc1"
+description = "Rehearse a user-selected ZIP restore into a new disposable, manifest-verified target."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "Logan Pendragon Multiverse"}]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["build>=1.3,<2", "mypy>=1.15,<3", "pip-audit>=2.9,<3", "pytest>=8,<10", "pytest-cov>=6,<8", "ruff>=0.11,<1"]
+
+[project.scripts]
+backup-restore-rehearsal = "backup_restore_rehearsal.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=backup_restore_rehearsal --cov-branch --cov-report=term-missing --cov-fail-under=90"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.coverage.run]
+omit = ["src/*/__main__.py"]
