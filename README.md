@@ -2,7 +2,7 @@
 
 Rehearse a user-selected ZIP restore into a new disposable, manifest-verified target.
 
-Prepared version: **0.1.0**. Publication is pending review and release gates; consult GitHub Releases for published artifacts. Original implementation for Logan Pendragon Forge. MIT licensed. No paid services, account or credentials are needed.
+Version: **0.1.0**. [GitHub Releases](https://github.com/loganpendragonmultiverse/backup-restore-rehearsal/releases) identifies published downloads and release status. Original implementation for Logan Pendragon Forge. MIT licensed. No paid services, account or credentials are needed.
 
 ## Three-minute start
 
