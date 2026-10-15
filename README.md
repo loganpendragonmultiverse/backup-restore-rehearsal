@@ -2,7 +2,7 @@
 
 Rehearse a user-selected ZIP restore into a new disposable, manifest-verified target.
 
-Version: **0.1.0**. [GitHub Releases](https://github.com/loganpendragonmultiverse/backup-restore-rehearsal/releases) identifies published downloads and release status. Original implementation for Logan Pendragon Forge. MIT licensed. No paid services, account or credentials are needed.
+MIT licensed. Runs locally without an account or external service. See [GitHub Releases](https://github.com/loganpendragonmultiverse/backup-restore-rehearsal/releases) for downloads.
 
 ## Three-minute start
 
@@ -14,7 +14,7 @@ backup-restore-rehearsal inspect synthetic.zip --manifest synthetic-manifest.jso
 backup-restore-rehearsal restore synthetic.zip --manifest synthetic-manifest.json --parent . --reviewed
 ```
 
-## What this candidate does
+## Features
 
 One explicitly selected ZIP backup plus a supplied schema-1 SHA-256 manifest. Inspect the entire selected archive and verify its file set and hashes before extraction; restore only to a random newly created disposable child under an explicitly selected parent; rehash every restored file before reporting success.
 
@@ -28,4 +28,4 @@ ZIP stored/deflate only. No tar, 7z, RAR, encrypted archives, disk images, appli
 
 ## Development and support
 
-Requires Python 3.11+; the runtime has no third-party dependencies. Windows and Linux acceptance results are recorded in TESTING.md; the Windows, macOS and Linux CI matrices also passed for the prepared source. See [DEVELOPMENT.md](DEVELOPMENT.md), [TESTING.md](TESTING.md), [SECURITY.md](SECURITY.md), and [CHANGELOG.md](CHANGELOG.md). Pull requests receive maintainer review; no contribution or release merges automatically. Maintenance is on demand, with no service-level commitment.
+Requires Python 3.11+; the runtime has no third-party dependencies. Windows and Linux acceptance results are recorded in TESTING.md; the Windows, macOS and Linux CI matrices also passed for this source. See [DEVELOPMENT.md](DEVELOPMENT.md), [TESTING.md](TESTING.md), [SECURITY.md](SECURITY.md), and [CHANGELOG.md](CHANGELOG.md). Pull requests receive maintainer review; no contribution or release merges automatically. Maintenance is on demand, with no service-level commitment.
