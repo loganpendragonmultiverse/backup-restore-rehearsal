@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "backup-restore-rehearsal"
-version = "0.1.0"
+version = "0.1.1"
 description = "Rehearse a user-selected ZIP restore into a new disposable, manifest-verified target."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -38,3 +38,7 @@ select = ["E4", "E7", "E9", "F", "I"]
 
 [tool.coverage.run]
 omit = ["src/*/__main__.py"]
+
+[tool.setuptools.data-files]
+"share/doc/backup-restore-rehearsal" = ["README.md", "CHANGELOG.md", "DEVELOPMENT.md", "TESTING.md", "LICENSE"]
+"share/doc/backup-restore-rehearsal/examples" = ["examples/make_fixture.py"]
