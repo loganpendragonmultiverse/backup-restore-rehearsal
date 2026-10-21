@@ -17,3 +17,7 @@ For a release, keep the package version and changelog in agreement, create an an
 ## 0.1.1 complete-stream verification
 
 Inspection checks the complete declared compressed span as well as the ZIP reader's logical file bytes. Stored members must have an exact decoded length; deflate members must reach their end marker without hidden decoded suffixes or trailing compressed bytes. Size, CRC-32 and supplied SHA-256 must all agree before creating a restore target. Processing remains chunk-bounded (at most 64 KiB of decoded output per validation step, including a possible one-byte over-limit probe); the existing archive/file/total/count/depth/ratio limits remain unchanged. Standard data descriptors and ZIP64 local headers remain supported within those limits. Malformed deflate input produces a controlled CLI error. Schema versions are integers and direct API restore acceptance must be boolean true. This does not add protection against concurrent hostile mutation by the same user.
+
+## 0.1.2 release identity checks
+
+Release packaging compares runtime AST, project/tag version, and built wheel METADATA/source PKG-INFO Name, Version and Requires-Python before checksumming exactly two distributions. Run the packaging helper with Python 3.11+; supported application runtimes and native acceptance requirements are unchanged.

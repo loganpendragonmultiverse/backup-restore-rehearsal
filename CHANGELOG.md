@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2 — 2026-10-21
+
+- Verify built distribution Name, Version and Requires-Python against project, runtime and tag identity before writing exact two-payload checksums.
+- Add portable metadata mismatch, duplicate and missing-field, runtime, tag and payload-set regressions without changing native requirements or supported runtimes.
+
 ## 0.1.1 — 2026-10-21
 
 - Verify complete bounded stored/deflate streams, including decoded length, deflate end marker, absence of hidden suffix/tail bytes and CRC, before accepting manifest hashes or creating a restore target.
