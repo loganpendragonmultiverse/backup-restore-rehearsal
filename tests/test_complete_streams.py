@@ -92,7 +92,9 @@ def test_restore_requires_boolean_review_acceptance(tmp_path, reviewed):
 
 
 @pytest.mark.parametrize("compression", [zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED])
-@pytest.mark.parametrize("data", [b"", b"x", b"a" * 65536 + b"b" * 32])
+@pytest.mark.parametrize(
+    "data", [b"", b"x", b"a" * 65536 + b"b" * 32], ids=["empty", "one-byte", "chunk-boundary"]
+)
 def test_complete_streams_and_chunk_boundaries_restore(tmp_path, compression, data, monkeypatch):
     # Chunk fixtures exercise bounded processing rather than the expansion-ratio policy.
     monkeypatch.setattr(core, "MAX_RATIO", 10000)
