@@ -1,59 +1,111 @@
-"""Build checksummed release assets from the exact checkout; never publishes."""
+"""Validate tagged distribution identity before writing two-payload checksums."""
 
 from __future__ import annotations
 
+import ast
 import hashlib
-import json
 import os
-import subprocess
+import stat
+import tarfile
 import zipfile
+from email.parser import BytesParser
 from pathlib import Path
+
+RUNTIME_MODULE = "backup_restore_rehearsal"
+MAX_METADATA = 4 * 1024 * 1024
+
+
+def validate_metadata(raw: bytes, identity: dict[str, str]) -> None:
+    if len(raw) > MAX_METADATA:
+        raise ValueError("Built metadata exceeds limit")
+    message = BytesParser().parsebytes(raw)
+    for field, value in identity.items():
+        if message.get_all(field, []) != [value]:
+            raise ValueError(f"Built metadata {field} disagrees with project")
+
+
+def validate_runtime(source: str, version: str) -> None:
+    versions = [
+        ast.literal_eval(node.value)
+        for node in ast.parse(source).body
+        if isinstance(node, ast.Assign)
+        and any(isinstance(name, ast.Name) and name.id == "__version__" for name in node.targets)
+    ]
+    if versions != [version]:
+        raise ValueError("Runtime/package versions disagree")
+
+
+def validate_distribution(path: Path, identity: dict[str, str], stem: str) -> None:
+    if path.suffix == ".whl":
+        with zipfile.ZipFile(path) as archive:
+            members = [
+                entry for entry in archive.infolist() if entry.filename.endswith("/METADATA")
+            ]
+            if len(members) != 1 or members[0].filename != stem + ".dist-info/METADATA":
+                raise ValueError("Wheel metadata path/count disagrees")
+            member = members[0]
+            if member.is_dir() or stat.S_ISLNK(member.external_attr >> 16) or member.flag_bits & 1:
+                raise ValueError("Wheel metadata must be regular and unencrypted")
+            if member.file_size > MAX_METADATA:
+                raise ValueError("Built metadata exceeds limit")
+            validate_metadata(archive.read(member), identity)
+    else:
+        with tarfile.open(path, "r:gz") as archive:
+            members = [entry for entry in archive.getmembers() if entry.name == stem + "/PKG-INFO"]
+            if len(members) != 1 or not members[0].isfile():
+                raise ValueError("Source metadata path/count/type disagrees")
+            if members[0].size > MAX_METADATA:
+                raise ValueError("Built metadata exceeds limit")
+            handle = archive.extractfile(members[0])
+            if handle is None:
+                raise ValueError("Source metadata unavailable")
+            with handle:
+                validate_metadata(handle.read(MAX_METADATA + 1), identity)
+
+
+def write_checksums(root: Path, project: dict[str, str], source: str) -> str:
+    name, version, floor = project["name"], project["version"], project["requires-python"]
+    if not all(isinstance(value, str) and value for value in (name, version, floor)):
+        raise ValueError("Release identity must contain nonempty strings")
+    validate_runtime(source, version)
+    if (
+        os.environ.get("GITHUB_REF_TYPE") == "tag"
+        and os.environ.get("GITHUB_REF_NAME") != "v" + version
+    ):
+        raise ValueError("Tag/package versions disagree")
+    output = root / "dist"
+    stem = name.replace("-", "_") + "-" + version
+    expected = {stem + "-py3-none-any.whl", stem + ".tar.gz"}
+    if {file.name for file in output.iterdir()} - {"SHA256SUMS"} != expected:
+        raise ValueError("Expected exactly the current wheel and source distribution")
+    identity = {"Name": name, "Version": version, "Requires-Python": floor}
+    rows = []
+    for filename in sorted(expected):
+        file = output / filename
+        if file.is_symlink() or not stat.S_ISREG(file.stat().st_mode):
+            raise ValueError("Distributions must be regular files")
+        validate_distribution(file, identity, stem)
+        digest = hashlib.sha256()
+        with file.open("rb") as handle:
+            for block in iter(lambda: handle.read(65536), b""):
+                digest.update(block)
+        rows.append(digest.hexdigest() + "  " + filename + "\n")
+    checksum = output / "SHA256SUMS"
+    if checksum.is_symlink() or (checksum.exists() and not checksum.is_file()):
+        raise ValueError("Checksum output must be a regular file")
+    result = "".join(rows)
+    checksum.write_text(result, encoding="utf-8")
+    return result
 
 
 def main() -> None:
-    root = Path(__file__).resolve().parents[1]
-    os.chdir(root)
-    if (root / "package.json").exists():
-        metadata = json.loads((root / "package.json").read_text("utf-8"))
-        version = metadata["version"]
-        slug = metadata["name"]
-        output = root / "release"
-        output.mkdir(exist_ok=True)
-        with zipfile.ZipFile(
-            output / f"{slug}-v{version}-web.zip", "w", zipfile.ZIP_DEFLATED
-        ) as archive:
-            for file in sorted((root / "dist").rglob("*")):
-                if file.is_file():
-                    archive.write(file, str(file.relative_to(root / "dist")))
-        subprocess.run(
-            [
-                "git",
-                "archive",
-                "--format=zip",
-                f"--output={output / (slug + '-v' + version + '-source.zip')}",
-                "HEAD",
-            ],
-            check=True,
-        )
-    else:
-        import tomllib
+    # Only this packaging entry point requires Python 3.11+; validators support 3.10.
+    import tomllib
 
-        version = tomllib.loads((root / "pyproject.toml").read_text("utf-8"))["project"]["version"]
-        output = root / "dist"
-    if os.environ.get("GITHUB_REF_TYPE") == "tag":
-        if os.environ.get("GITHUB_REF_NAME") != "v" + version:
-            raise SystemExit("Tag and package/runtime version differ")
-    artifacts = [
-        file for file in sorted(output.iterdir()) if file.is_file() and file.name != "SHA256SUMS"
-    ]
-    if not artifacts:
-        raise SystemExit("No distributable files were produced")
-    sums = "".join(
-        hashlib.sha256(file.read_bytes()).hexdigest() + "  " + file.name + "\n"
-        for file in artifacts
-    )
-    (output / "SHA256SUMS").write_text(sums, encoding="utf-8")
-    print(sums, end="")
+    root = Path(__file__).resolve().parents[1]
+    project = tomllib.loads((root / "pyproject.toml").read_text("utf-8"))["project"]
+    source = (root / "src" / RUNTIME_MODULE / "__init__.py").read_text("utf-8")
+    print(write_checksums(root, project, source), end="")
 
 
 if __name__ == "__main__":
