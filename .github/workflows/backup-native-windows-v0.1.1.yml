@@ -1,0 +1,57 @@
+name: Exact-tag Backup native Windows acceptance
+on:
+  push:
+    branches: [qa/backup-native-windows-v0.1.1-20261021]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  native:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.14']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          path: qa-routing
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: e1b9beffde6147e68679c1605ac1111263e11402
+          path: tag-source
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify exact frozen transport inputs
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $base = Join-Path $env:GITHUB_WORKSPACE 'qa-routing/.github/qa/backup-native-v0.1.1'
+          if ((Get-FileHash (Join-Path $base 'bootstrap.py') -Algorithm SHA256).Hash.ToLowerInvariant() -ne '3c23a6ad016573940ea3d2a4cb37bcb73e33e7b4cba609c01028d4388b6f52cf') { throw 'Bootstrap hash mismatch' }
+          if ((Get-FileHash (Join-Path $base 'run_backup_native.py.txt') -Algorithm SHA256).Hash.ToLowerInvariant() -ne '4f9e6a87595a27fb0dc7f34161b3f6c4c5805210cca5394c2419c42aaf4a870e') { throw 'Runner hash mismatch' }
+          if ((Get-FileHash (Join-Path $base 'routing.json') -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'ca2b5aebf603383205c41e57a144c432f4b1a8ea3a2bfc3518c1a83858fe391f') { throw 'Routing hash mismatch' }
+      - name: Download exact existing official tag artifact
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -I -B qa-routing/.github/qa/backup-native-v0.1.1/bootstrap.py download
+      - name: Execute genuine native preflight and unchanged installed acceptance
+        shell: pwsh
+        run: python -I -B qa-routing/.github/qa/backup-native-v0.1.1/bootstrap.py run
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: always()
+        with:
+          name: backup-native-windows-${{ matrix.python }}
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/backup-native-*/DOWNLOAD.json
+            ${{ runner.temp }}/backup-native-*/PREFLIGHT.json
+            ${{ runner.temp }}/backup-native-*/acceptance/RESULT.json
+            ${{ runner.temp }}/backup-native-*/acceptance/artifact-*/*.xml
+            ${{ runner.temp }}/backup-native-*/acceptance/artifact-*/*.log
