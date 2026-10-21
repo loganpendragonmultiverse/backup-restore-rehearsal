@@ -1,0 +1,92 @@
+{
+  "slug": "backup-restore-rehearsal",
+  "module": "backup_restore_rehearsal",
+  "version": "0.1.2",
+  "commit": "2c07902c8d9b7ddd6f5db4b1f939f5971ffc702b",
+  "tag": "v0.1.2",
+  "tag_object": "3399c2ed14d7e2ade991cfc1d8f418bb05b1e8ba",
+  "tag_run": 39542791007,
+  "source_files": {
+    ".gitattributes": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
+    ".github/CODEOWNERS": "333daf522f45e35b36cd6cd46b40033664810240682721a7ca2f6b99ce4be97a",
+    ".github/ISSUE_TEMPLATE/bug.yml": "6b7ae6c0c24f38223fcd342c229004ffa3d7ce84b857494233c6b69d47874394",
+    ".github/ISSUE_TEMPLATE/config.yml": "1f103c6a9dd07cd13a9a6f17ace6b813f47747eb9cb7e00488cb2073caaf91bb",
+    ".github/ISSUE_TEMPLATE/feature.yml": "1367525dc2455038942cce6e6718babe7d7ef61605c23c497c74dc7611fc93fc",
+    ".github/PULL_REQUEST_TEMPLATE.md": "8d577694ea964009b2ce0e1634babfd5bd42ae02b136b0f30e06025f3e1190f3",
+    ".github/dependabot.yml": "408abbeb3fb78cce167b200431268e3cc47b40b7b6ba0f158c9a819a571bde99",
+    ".github/workflows/ci.yml": "f6f46c11f265d25a8873b5e84c998ae968c5413854c08f599bc69fe822f199e1",
+    ".github/workflows/codeql.yml": "ab109e384aab3488b6abc3ef78686e6f4cac5b1b5170ff7f62bd3f33b0aed294",
+    ".github/workflows/release.yml": "9291bfacc6dfee614b6ee2c3850b5415f4f07e42531c9d34ceeb1c6712a84b6b",
+    ".gitignore": "9f2c60d33236f69e046e853e73c95db174c8e6f4bec9b4cf5a6df059a528e319",
+    "CHANGELOG.md": "c2a16ec4061d4a57f491707c5f7283d88408c28cc0e32af8a1c9f3a8f263e2d5",
+    "CODE_OF_CONDUCT.md": "e212bf1f9b21782c437c4044f07cd924c04d8110fe72ac9a40b0b2a5087f8d53",
+    "CONTRIBUTING.md": "adb89c2db8471e96db2766598dd3670714409016e55b8ad3fbc4a360a88a58ef",
+    "DEVELOPMENT.md": "51f26b423eabaee635fe2bbde7d1d0e59c9110bcddf9a3394cc5f176a53ad847",
+    "LICENSE": "55a70b9017dbf171520ab336a0b3b2f4283878d87008382e1f5209afa97dd73b",
+    "MANIFEST.in": "fccab2e27cc52e702315d5a3d2b99d0c6d294e4a785d4819920d27ca164817db",
+    "README.md": "b5fccec6dcf515d778492dbc32b8839179c661cc0664818f7cc77ea327183ed1",
+    "SECURITY.md": "487fd69452e05e806156ea7774b2b13eac3a19338d4b36c0e07a572ac9f37ca0",
+    "SUPPORT.md": "09798a4aff2df2ad22051c206fc8bca66bf49e8f68eb18b47aeeb13248e8abed",
+    "TESTING.md": "a45fd723b53c275cdcfb9a87e7ac22ad0a67f6d34e75cb92b592b13b6d0cd99e",
+    "examples/make_fixture.py": "df8da00c4b98fbfa53efa4feba13f58d42a96349d69eb97c749048e82b493f54",
+    "pyproject.toml": "da596e1b690524ae2061c3460a26475ee152db073b67d5a3b270bcb923b78f98",
+    "src/backup_restore_rehearsal/__init__.py": "df97105500482b22077e99b69a0afea99163864dfe0b3b3a9899c8d34b7710d6",
+    "src/backup_restore_rehearsal/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "src/backup_restore_rehearsal/cli.py": "dae0a021358f23137fac31c0aaf5ed4d7dd3c64aaacae231bd6432aa7b586dbd",
+    "src/backup_restore_rehearsal/core.py": "17c94e412cbc724cdd93ea7e5e209c04bce406a021619a6c7e7a2aa4dacdcbea",
+    "tests/test_boundaries.py": "dbd6c6494c05e6bdb77e6ae5e04ab385d4a2a26b65c81db0e0b2d187b1c59dc4",
+    "tests/test_cli.py": "908154e66bea93d5253389d16e669693b4d707bf716535d2ac20823c0ecd40be",
+    "tests/test_complete_streams.py": "e67c6b9d2f51671081a433b0dcd480df95bf7f4efe99dbdd4420917f15dea377",
+    "tests/test_core.py": "3344883d8c4d36f38615b4254954f410ca2e9946c1aeddbf54debe484ec016e0",
+    "tests/test_native_paths.py": "a17e77d357b7124736c14f9800ba7aefde59c3d22299e8f9d329b69602b6b6e0",
+    "tests/test_release_package.py": "1a9e9d2cbc1a877310a711be4e0e7700f204da5b4d439d6a6ff41b2261dd137a",
+    "tools/release_package.py": "db1eb6f297e99523ade560dbed2716ec0e5775e21dc2e07220c03b60332da065"
+  },
+  "source_files_sha256": "bc937eea4d48a48b0519ca963fc7731f90684333eae6694ac49031f35febd302",
+  "tag_artifact_hashes": {
+    "SHA256SUMS": "dbbace9bf5ac9c22ee07d635959214757b52b389250045abb1cb83c4ca634fc3",
+    "backup_restore_rehearsal-0.1.2-py3-none-any.whl": "323d6ee5e0a76c9d750ab9bd1575ed8736d60f33cabb0d73fc69c90c6c749309",
+    "backup_restore_rehearsal-0.1.2.tar.gz": "6a1a59d5d3377703cad33c72cd005b991405516dc72867f77cc1fc9251083362"
+  },
+  "native_contract": {
+    "windows": {
+      "full_tests": 99,
+      "full_passed": 98,
+      "full_skipped": 1,
+      "allowed_skip_name": "test_special_manifest_is_refused_without_opening",
+      "focused_tests": 12,
+      "focused_passed": 12,
+      "focused_skipped": 0
+    },
+    "linux": {
+      "full_tests": 99,
+      "full_passed": 90,
+      "full_skipped": 9,
+      "focused_tests": 12,
+      "focused_passed": 4,
+      "focused_skipped": 8
+    }
+  },
+  "criteria": [
+    {
+      "id": "backup-linux-installed",
+      "platform": "Linux",
+      "description": "Both exact-tag installed distributions execute full unchanged coverage-gated suite, real POSIX link refusals and byte-verified disposable restore; no required focused Linux skip."
+    },
+    {
+      "id": "backup-windows-installed",
+      "platform": "Windows",
+      "description": "Both exact-tag installed distributions execute full unchanged coverage-gated suite and all12real native link/junction fixtures with zero focused skips, including archive/manifest/parent/ancestor junction and OS-symlink refusal."
+    }
+  ],
+  "runtime_contract_sha256": "2fa717e057194be137668bd94a12bb35f5998938ccce3b07c18d1e77a17c96aa",
+  "runtime_contract": {
+    "Linux": [
+      "3.11"
+    ],
+    "Windows": [
+      "3.11",
+      "3.14"
+    ]
+  }
+}
