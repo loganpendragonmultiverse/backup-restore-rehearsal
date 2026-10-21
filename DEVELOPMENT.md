@@ -13,3 +13,7 @@ Install editable development dependencies with `python -m pip install -e ".[dev]
 Use a branch and pull request for changes. Run the test matrix and CodeQL, resolve review conversations, and let the maintainer make the final merge decision. CI workflows use read-only permissions and pinned actions.
 
 For a release, keep the package version and changelog in agreement, create an annotated semantic-version tag, and use that tag's successful release build. Verify the downloadable files against SHA256SUMS before publishing a GitHub release. Never bypass repository protections or publish artifacts from a different commit.
+
+## 0.1.1 complete-stream verification
+
+Inspection checks the complete declared compressed span as well as the ZIP reader's logical file bytes. Stored members must have an exact decoded length; deflate members must reach their end marker without hidden decoded suffixes or trailing compressed bytes. Size, CRC-32 and supplied SHA-256 must all agree before creating a restore target. Processing remains chunk-bounded (at most 64 KiB of decoded output per validation step, including a possible one-byte over-limit probe); the existing archive/file/total/count/depth/ratio limits remain unchanged. Standard data descriptors and ZIP64 local headers remain supported within those limits. Malformed deflate input produces a controlled CLI error. Schema versions are integers and direct API restore acceptance must be boolean true. This does not add protection against concurrent hostile mutation by the same user.

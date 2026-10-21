@@ -7,9 +7,11 @@ import json
 import os
 import re
 import stat
+import struct
 import tempfile
 import unicodedata
 import zipfile
+import zlib
 from pathlib import Path
 from typing import Any
 
@@ -52,8 +54,8 @@ def no_links(path: Path) -> Path:
 
 def load_manifest(path: Path) -> dict[str, str]:
     no_links(path)
-    if path.stat().st_size > 1_000_000:
-        raise ValueError("Manifest exceeds 1 MB")
+    if not path.is_file() or path.stat().st_size > 1_000_000:
+        raise ValueError("Select one regular manifest file up to 1 MB")
 
     def pairs(items: list[tuple[str, Any]]) -> dict[str, Any]:
         result: dict[str, Any] = {}
@@ -64,7 +66,12 @@ def load_manifest(path: Path) -> dict[str, str]:
         return result
 
     value = json.loads(path.read_text("utf-8"), object_pairs_hook=pairs)
-    if not isinstance(value, dict) or set(value) != {"schema", "files"} or value["schema"] != 1:
+    if (
+        not isinstance(value, dict)
+        or set(value) != {"schema", "files"}
+        or type(value["schema"]) is not int
+        or value["schema"] != 1
+    ):
         raise ValueError("Expected schema 1 manifest with files object")
     files = value["files"]
     if not isinstance(files, dict) or not 1 <= len(files) <= MAX_ENTRIES:
@@ -128,10 +135,63 @@ def inventory(archive: zipfile.ZipFile) -> list[zipfile.ZipInfo]:
     return entries
 
 
+def verify_compressed_stream(archive: zipfile.ZipFile, item: zipfile.ZipInfo) -> None:
+    """Verify the complete declared compressed span, without trusting decoded size.
+
+    ZipExtFile limits returned data to file_size. A corrupt header can otherwise
+    hide decoded suffixes or an unfinished deflate stream behind a matching prefix.
+    Call only after ZipFile.open has validated the local name/header and overlap.
+    Output allocation is bounded to one 64 KiB chunk (including a probe byte).
+    """
+    source = archive.fp
+    if source is None or not 0 <= item.compress_size <= MAX_ARCHIVE:
+        raise zipfile.BadZipFile("Invalid compressed member extent")
+    source.seek(item.header_offset + 26)
+    lengths = source.read(4)
+    if len(lengths) != 4:
+        raise zipfile.BadZipFile("Truncated local ZIP header")
+    name_bytes, extra_bytes = struct.unpack("<HH", lengths)
+    source.seek(item.header_offset + 30 + name_bytes + extra_bytes)
+    remaining = item.compress_size
+    count = crc = 0
+    decoder = (
+        zlib.decompressobj(-zlib.MAX_WBITS) if item.compress_type == zipfile.ZIP_DEFLATED else None
+    )
+    while remaining:
+        chunk = source.read(min(65536, remaining))
+        if not chunk:
+            raise zipfile.BadZipFile("Truncated compressed member")
+        remaining -= len(chunk)
+        pending = chunk
+        while pending:
+            if decoder is None:
+                decoded, pending = pending, b""
+            else:
+                allowance = min(MAX_FILE, item.file_size) - count
+                try:
+                    decoded = decoder.decompress(pending, min(65536, allowance + 1))
+                except zlib.error as error:
+                    raise zipfile.BadZipFile("Invalid deflate member") from error
+                pending = decoder.unconsumed_tail
+                if decoder.unused_data or decoder.eof and (pending or remaining):
+                    raise zipfile.BadZipFile("Trailing compressed member data")
+            count += len(decoded)
+            if count > min(MAX_FILE, item.file_size):
+                raise ValueError("Member exceeds declared size or limit")
+            crc = zlib.crc32(decoded, crc)
+    if decoder is not None and not decoder.eof:
+        raise zipfile.BadZipFile("Incomplete deflate stream")
+    if count != item.file_size:
+        raise zipfile.BadZipFile("Decoded member size differs from declaration")
+    if crc != item.CRC:
+        raise zipfile.BadZipFile("Bad CRC-32 for complete member")
+
+
 def read_member(archive: zipfile.ZipFile, item: zipfile.ZipInfo, output: Any = None) -> str:
     count = 0
     sha = hashlib.sha256()
     with archive.open(item) as stream:
+        verify_compressed_stream(archive, item)
         while True:
             chunk = stream.read(65536)
             if not chunk:
@@ -149,7 +209,11 @@ def read_member(archive: zipfile.ZipFile, item: zipfile.ZipInfo, output: Any = N
 
 def verify(archive: zipfile.ZipFile, expected: dict[str, str]) -> dict[str, Any]:
     entries = inventory(archive)
-    actual = {item.filename: read_member(archive, item) for item in entries if not item.is_dir()}
+    actual = {}
+    for item in entries:
+        digest = read_member(archive, item)
+        if not item.is_dir():
+            actual[item.filename] = digest
     if actual != expected:
         raise ValueError("Manifest mismatch: names or SHA-256 differ")
     return dict(
@@ -177,7 +241,7 @@ def inspect(source: Path, manifest: Path) -> dict[str, Any]:
 
 
 def restore(source: Path, manifest: Path, parent: Path, reviewed: bool) -> dict[str, Any]:
-    if not reviewed:
+    if type(reviewed) is not bool or not reviewed:
         raise ValueError("Inspect and review before --reviewed restore")
     parent = no_links(parent)
     if not parent.is_dir():
